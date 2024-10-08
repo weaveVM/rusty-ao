@@ -1,0 +1,23 @@
+[package]
+name = "rusty_ao"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1.0.210", features = ["derive"] }
+serde_json = "1.0.128"
+reqwest = { version = "0.12.8", features = ["json"] }
+bundlr-sdk = "0.5.0"
+base64 = "0.22.1"
+thiserror = "1.0.64"
+tokio = { version = "1", features = ["full"] }
+
+[profile.dind]
+inherits = "dev"
+
+[profile.no-debug-assertions]
+inherits = "dev"
+debug-assertions = false
+
+[profile.release]
+lto = true
