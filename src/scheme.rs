@@ -14,7 +14,6 @@ pub const DEFAULT_SQLITE_MODULE: &str = "sFNHeYzhHfP9vV9CPpqZMU-4Zzq_qKGKwlwMZoz
 pub const DEFAULT_SCHEDULER: &str = "_GQ33BkPtZrqxA84vM8Zk-N2aO0toNNu_C-l-rawrBA";
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "PascalCase")]
 pub struct ResponseMu {
     id: String,
     message: String,

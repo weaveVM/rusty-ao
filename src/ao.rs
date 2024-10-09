@@ -1,7 +1,7 @@
 use crate::errors::AoErrors;
 use crate::scheme::{
-    ResponseCu, ResponseMu, DATA_PROTOCOL, SDK, TYPE_MESSAGE, TYPE_PROCESS, VARIANT,
-    DEFAULT_CU, DEFAULT_MU
+    ResponseCu, ResponseMu, DATA_PROTOCOL, DEFAULT_CU, DEFAULT_MU, SDK, TYPE_MESSAGE, TYPE_PROCESS,
+    VARIANT,
 };
 use crate::wallet::{SignerTypes, Signers};
 use base64::prelude::BASE64_STANDARD;
@@ -16,7 +16,7 @@ use reqwest::header::{HeaderMap, HeaderValue};
 use reqwest::{Client, Method, Request, RequestBuilder, Response, Url};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 pub struct Ao {
     mu_url: String,
@@ -36,14 +36,12 @@ impl Ao {
     }
 
     pub fn default_init(signer: SignerTypes) -> Result<Self, AoErrors> {
-        Ok(
-            Self {
-                mu_url: DEFAULT_MU.to_string(),
-                cu_url: DEFAULT_CU.to_string(),
-                signer_type: signer.clone(),
-                signer: Self::signer(&signer)?,
-            }
-        )
+        Ok(Self {
+            mu_url: DEFAULT_MU.to_string(),
+            cu_url: DEFAULT_CU.to_string(),
+            signer_type: signer.clone(),
+            signer: Self::signer(&signer)?,
+        })
     }
 
     fn new_bundle_item(
@@ -89,17 +87,14 @@ impl Ao {
         &self,
         process_id: String,
         data: Vec<u8>,
-        msg_type: String,
         mut tags: Vec<Tag>,
     ) -> Result<ResponseMu, AoErrors> {
-        Self::add_base_tags(msg_type, &mut tags);
-
         let mut req_headers = HeaderMap::new();
         req_headers.insert(
-            "content-type",
+            "Content-Type",
             HeaderValue::from_str("application/octet-stream").unwrap(),
         );
-        req_headers.insert("accept", HeaderValue::from_str("application/json").unwrap());
+        req_headers.insert("Accept", HeaderValue::from_str("application/json").unwrap());
 
         let mut create_tx = Self::new_bundle_item(data, process_id, tags)?;
         let _ = create_tx.sign(self.raw_signer()?).await;
@@ -111,17 +106,25 @@ impl Ao {
             .post(&self.mu_url)
             .body(payload)
             .headers(req_headers)
+            .timeout(Duration::from_secs(60))
             .send()
-            .await
-            .map_err(|_| AoErrors::InvalidServerResponse)?;
+            .await;
 
-        req.json::<ResponseMu>()
-            .await
-            .map_err(|_| AoErrors::InvalidServerResponse)
+        match req {
+            Ok(res) => {
+                let res = res
+                    .text()
+                    .await
+                    .map_err(|_| AoErrors::InvalidServerResponse)?;
+
+                serde_json::from_str(&res).map_err(|_| AoErrors::InvalidResponseDeserialization)
+            }
+            Err(e) => Err(AoErrors::InvalidServerResponse),
+        }
     }
 
-    fn add_base_tags(msg_type: String, tags: &mut Vec<Tag>) {
-        tags.extend(vec![
+    fn get_base_tags(msg_type: String) -> Vec<Tag> {
+        vec![
             Tag {
                 name: "Data-Protocol".to_string(),
                 value: DATA_PROTOCOL.to_string(),
@@ -138,20 +141,17 @@ impl Ao {
                 name: "SDK".to_string(),
                 value: SDK.to_string(),
             },
-        ]);
+        ]
     }
 
     pub async fn eval(&self, process_id: String, code: String) -> Result<ResponseMu, AoErrors> {
-        self.send(
-            process_id,
-            code.as_bytes().to_vec(),
-            TYPE_MESSAGE.to_string(),
-            vec![Tag {
-                name: "Action".to_string(),
-                value: "Eval".to_string(),
-            }],
-        )
-        .await
+        let mut base_tags = Self::get_base_tags(TYPE_MESSAGE.to_string());
+        base_tags.extend(vec![Tag {
+            name: "Action".to_string(),
+            value: "Eval".to_string(),
+        }]);
+        self.send(process_id, code.as_bytes().to_vec(), base_tags)
+            .await
     }
 
     pub async fn spawn(
@@ -160,6 +160,7 @@ impl Ao {
         app_name: String,
         module: String,
         scheduler: String,
+        tags: Vec<Tag>,
     ) -> Result<ResponseMu, AoErrors> {
         // Get the current time
         let now = SystemTime::now();
@@ -170,30 +171,35 @@ impl Ao {
             .as_nanos();
         let unix_nano_str = unix_nano.to_string();
 
-        self.send(
-            "".to_string(),
-            unix_nano_str.as_bytes().to_vec(),
-            TYPE_PROCESS.to_string(),
-            vec![
-                Tag {
-                    name: "Name".to_string(),
-                    value: process_name,
-                },
-                Tag {
-                    name: "App-Name".to_string(),
-                    value: app_name,
-                },
-                Tag {
-                    name: "Module".to_string(),
-                    value: module,
-                },
-                Tag {
-                    name: "Scheduler".to_string(),
-                    value: scheduler,
-                },
-            ],
-        )
-        .await
+        let base_tags = Self::get_base_tags("Process".to_string());
+
+        let mut def_tags = vec![
+            Tag {
+                name: "Name".to_string(),
+                value: process_name,
+            },
+            Tag {
+                name: "App-Name".to_string(),
+                value: app_name,
+            },
+            Tag {
+                name: "Module".to_string(),
+                value: module,
+            },
+            Tag {
+                name: "Scheduler".to_string(),
+                value: scheduler,
+            },
+            Tag {
+                name: "Content-Type".to_string(),
+                value: "text/plain".to_string(),
+            },
+        ];
+        def_tags.extend(base_tags);
+        def_tags.extend(tags);
+
+        self.send("".to_string(), unix_nano_str.as_bytes().to_vec(), def_tags)
+            .await
     }
 
     pub async fn get(
@@ -225,7 +231,7 @@ impl Ao {
         mut tags: Vec<Tag>,
     ) -> Result<ResponseCu, AoErrors> {
         let original_tags = tags.clone();
-        Self::add_base_tags(TYPE_MESSAGE.to_string(), &mut tags);
+        tags.extend(Self::get_base_tags(TYPE_MESSAGE.to_string()));
 
         #[derive(Serialize, Deserialize, Debug)]
         struct Item {
@@ -287,6 +293,7 @@ impl Ao {
 #[cfg(test)]
 mod tests {
     use crate::ao::Ao;
+    use crate::scheme::{DEFAULT_MODULE, DEFAULT_SCHEDULER};
     use crate::wallet::SignerTypes;
     use bundlr_sdk::tags::Tag;
 
@@ -302,10 +309,7 @@ mod tests {
 
     #[tokio::test]
     pub async fn test_default_init() {
-        let ao = Ao::default_init(
-            SignerTypes::Arweave("test_key.json".to_string()),
-        )
-        .unwrap();
+        let ao = Ao::default_init(SignerTypes::Arweave("test_key.json".to_string())).unwrap();
     }
 
     #[tokio::test]
@@ -320,6 +324,23 @@ mod tests {
             .get(
                 "ya9XinY0qXeYyf7HXANqzOiKns8yiXZoDtFqUMXkX0Q".to_string(),
                 "5JtjkYy1hk0Zce5mP6gDWIOdt9rCSQAFX-K9jZnqniw".to_string(),
+            )
+            .await;
+        println!("{:?}", res);
+        assert!(res.is_ok());
+        println!("{}", serde_json::to_string(&res.unwrap()).unwrap())
+    }
+
+    #[tokio::test]
+    pub async fn test_spawn() {
+        let ao = Ao::default_init(SignerTypes::Arweave("test_key.json".to_string())).unwrap();
+        let res = ao
+            .spawn(
+                "test1".to_string(),
+                "rusty-ao".to_string(),
+                DEFAULT_MODULE.to_string(),
+                DEFAULT_SCHEDULER.to_string(),
+                vec![],
             )
             .await;
         println!("{:?}", res);
