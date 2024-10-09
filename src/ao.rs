@@ -1,6 +1,7 @@
 use crate::errors::AoErrors;
 use crate::scheme::{
     ResponseCu, ResponseMu, DATA_PROTOCOL, SDK, TYPE_MESSAGE, TYPE_PROCESS, VARIANT,
+    DEFAULT_CU, DEFAULT_MU
 };
 use crate::wallet::{SignerTypes, Signers};
 use base64::prelude::BASE64_STANDARD;
@@ -32,6 +33,17 @@ impl Ao {
             signer_type: signer.clone(),
             signer: Self::signer(&signer)?,
         })
+    }
+
+    pub fn default_init(signer: SignerTypes) -> Result<Self, AoErrors> {
+        Ok(
+            Self {
+                mu_url: DEFAULT_MU.to_string(),
+                cu_url: DEFAULT_CU.to_string(),
+                signer_type: signer.clone(),
+                signer: Self::signer(&signer)?,
+            }
+        )
     }
 
     fn new_bundle_item(
@@ -283,6 +295,14 @@ mod tests {
         let ao = Ao::new(
             "https://mu.ao-testnet.xyz".to_string(),
             "https://cu.ao-testnet.xyz".to_string(),
+            SignerTypes::Arweave("test_key.json".to_string()),
+        )
+        .unwrap();
+    }
+
+    #[tokio::test]
+    pub async fn test_default_init() {
+        let ao = Ao::default_init(
             SignerTypes::Arweave("test_key.json".to_string()),
         )
         .unwrap();
