@@ -2,6 +2,12 @@
 name = "rusty_ao"
 version = "0.1.0"
 edition = "2021"
+repository = "https://github.com/weaveVM/rusty-ao"
+homepage = "https://github.com/weaveVM/rusty-ao"
+readme = "https://github.com/weaveVM/rusty-ao/README.md"
+description = "A blazingly fast client for AO written in Rust"
+authors = ["The WeaveVM authors"]
+license = "MIT"
 
 [dependencies]
 serde = { version = "1.0.210", features = ["derive"] }
