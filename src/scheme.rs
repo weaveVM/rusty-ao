@@ -5,7 +5,9 @@ pub const DATA_PROTOCOL: &str = "ao";
 pub const VARIANT: &str = "ao.TN.1";
 pub const TYPE_MESSAGE: &str = "Message";
 pub const TYPE_PROCESS: &str = "Process";
-pub const SDK: &str = "goao";
+pub const SDK: &str = "rusty-ao";
+pub const DEFAULT_MU: &str = "https://mu.ao-testnet.xyz";
+pub const DEFAULT_CU: &str = "https://cu.ao-testnet.xyz";
 
 pub const DEFAULT_MODULE: &str = "xT0ogTeagEGuySbKuUoo_NaWeeBv1fZ4MqgDdKVKY0U";
 pub const DEFAULT_SQLITE_MODULE: &str = "sFNHeYzhHfP9vV9CPpqZMU-4Zzq_qKGKwlwMZozWi2Y";
