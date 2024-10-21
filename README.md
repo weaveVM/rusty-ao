@@ -25,6 +25,9 @@ ao = { git = "https://github.com/weaveVM/rusty-ao.git", branch = "main" }
 ### Init an AO client
 
 ```rust
+// import the crate
+use rusty_ao::ao::Ao;
+// Initialize an AO client 
 let ao = Ao::new(
   "https://mu.ao-testnet.xyz".to_string(),
   "https://cu.ao-testnet.xyz".to_string(),
