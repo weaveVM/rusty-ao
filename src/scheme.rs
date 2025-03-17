@@ -15,21 +15,18 @@ pub const DEFAULT_SCHEDULER: &str = "_GQ33BkPtZrqxA84vM8Zk-N2aO0toNNu_C-l-rawrBA
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ResponseMu {
-    id: String,
-    message: String,
+    pub id: String,
+    pub message: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "PascalCase")]
 pub struct ResponseCu {
-    messages: Vec<serde_json::Value>, // Placeholder for the actual type
-    assignments: Vec<serde_json::Value>, // Placeholder for the actual type
-    spawns: Vec<serde_json::Value>,   // Placeholder for the actual type
-    output: serde_json::Value,        // Placeholder for the actual type
-    gas_used: i64,
+    pub messages: Vec<serde_json::Value>, // Placeholder for the actual type
+    pub assignments: Vec<serde_json::Value>, // Placeholder for the actual type
+    pub spawns: Vec<serde_json::Value>,   // Placeholder for the actual type
+    pub output: serde_json::Value,        // Placeholder for the actual type
+    pub gas_used: i64,
 }
 
-pub struct Tag {
-    pub name: String,
-    pub value: String,
-}
+pub use bundlr_sdk::tags::Tag;
