@@ -17,7 +17,7 @@ Alternatively, in your `Cargo.toml`, add:
 
 ```Cargo.toml
 [dependencies]
-ao = { git = "https://github.com/weaveVM/rusty-ao.git", branch = "main" }
+rusty_ao = { git = "https://github.com/weaveVM/rusty-ao.git", branch = "main" }
 ```
 
 ## Usage Examples
