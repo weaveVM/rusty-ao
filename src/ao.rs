@@ -295,7 +295,7 @@ mod tests {
     use crate::ao::Ao;
     use crate::scheme::{DEFAULT_MODULE, DEFAULT_SCHEDULER};
     use crate::wallet::SignerTypes;
-    use bundlr_sdk::tags::Tag;
+    use crate::scheme::Tag;
 
     #[tokio::test]
     pub async fn test_init() {

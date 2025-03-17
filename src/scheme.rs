@@ -29,7 +29,4 @@ pub struct ResponseCu {
     pub gas_used: i64,
 }
 
-pub struct Tag {
-    pub name: String,
-    pub value: String,
-}
+pub use bundlr_sdk::tags::Tag;
