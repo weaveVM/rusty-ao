@@ -18,14 +18,14 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-pub struct Ao {
+pub struct Legacy {
     mu_url: String,
     cu_url: String,
     signer_type: SignerTypes,
     signer: Signers,
 }
 
-impl Ao {
+impl Legacy {
     pub fn new(mu_url: String, cu_url: String, signer: SignerTypes) -> Result<Self, AoErrors> {
         Ok(Self {
             mu_url,
@@ -275,7 +275,7 @@ impl Ao {
         }
     }
 
-    fn create_ao_from_redirection(&self, res: &Response) -> Result<Ao, AoErrors> {
+    fn create_ao_from_redirection(&self, res: &Response) -> Result<Legacy, AoErrors> {
         let new_ao = Self::new(
             "".to_string(),
             res.headers()
@@ -292,14 +292,14 @@ impl Ao {
 
 #[cfg(test)]
 mod tests {
-    use crate::ao::Ao;
+    use crate::ao::Legacy;
     use crate::scheme::{DEFAULT_MODULE, DEFAULT_SCHEDULER};
     use crate::wallet::SignerTypes;
     use crate::scheme::Tag;
 
     #[tokio::test]
     pub async fn test_init() {
-        let ao = Ao::new(
+        let ao = Legacy::new(
             "https://mu.ao-testnet.xyz".to_string(),
             "https://cu.ao-testnet.xyz".to_string(),
             SignerTypes::Arweave("test_key.json".to_string()),
@@ -309,12 +309,12 @@ mod tests {
 
     #[tokio::test]
     pub async fn test_default_init() {
-        let ao = Ao::default_init(SignerTypes::Arweave("test_key.json".to_string())).unwrap();
+        let ao = Legacy::default_init(SignerTypes::Arweave("test_key.json".to_string())).unwrap();
     }
 
     #[tokio::test]
     pub async fn test_result() {
-        let ao = Ao::new(
+        let ao = Legacy::new(
             "https://mu.ao-testnet.xyz".to_string(),
             "https://cu.ao-testnet.xyz".to_string(),
             SignerTypes::Arweave("test_key.json".to_string()),
@@ -333,7 +333,7 @@ mod tests {
 
     #[tokio::test]
     pub async fn test_spawn() {
-        let ao = Ao::default_init(SignerTypes::Arweave("test_key.json".to_string())).unwrap();
+        let ao = Legacy::default_init(SignerTypes::Arweave("test_key.json".to_string())).unwrap();
         let res = ao
             .spawn(
                 "test1".to_string(),
@@ -350,7 +350,7 @@ mod tests {
 
     #[tokio::test]
     pub async fn test_dry_run() {
-        let ao = Ao::new(
+        let ao = Legacy::new(
             "https://mu.ao-testnet.xyz".to_string(),
             "https://cu.ao-testnet.xyz".to_string(),
             SignerTypes::Arweave("test_key.json".to_string()),

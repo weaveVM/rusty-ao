@@ -29,3 +29,21 @@ pub enum AoErrors {
     #[error("The server did not respond as expected")]
     InvalidResponseDeserialization,
 }
+
+#[derive(Serialize, Deserialize, Error, Debug)]
+pub enum HbErrors {
+    #[error("Error JSON-parsing the response")]
+    JsonError,
+
+    #[error("Error retrieving process state")]
+    ErrorProcessNow,
+
+    #[error("Invalid hb_node server response")]
+    InvalidServerResponse,
+
+    #[error("Invalid Hyperbeam node URL")]
+    InvalidHbNodeUrl,
+
+    #[error("The signer could not be created")]
+    ErrorConstructingSigner,
+}
