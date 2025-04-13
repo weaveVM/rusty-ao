@@ -20,15 +20,41 @@ Alternatively, in your `Cargo.toml`, add:
 ao = { git = "https://github.com/weaveVM/rusty-ao.git", branch = "main" }
 ```
 
-## Usage Examples
+## Usage Examples: HyperBEAM 
+
+### Init HyperBEAM client
+
+```rust
+use rusty_ao::hyperbeam::Hyperbeam;
+
+pub async fn init_hb() {
+    let hb = Hyperbeam::new(
+        "https://tee-1.forward.computer".to_string(),
+        SignerTypes::Arweave("test_key.json".to_string()),
+    )
+    .unwrap();
+}
+```
+
+### Get a process last computed message state
+
+Returns the `/Results` key of the latest computed message -- `~process@1.0`
+
+```rust
+let process_id = "oQZQd1-MztVOxODecwrxFR9UGUnsrX5wGseMJ9iSH38";
+let state = hb.process_now(process_id.to_string()).await.unwrap();
+```
+
+
+## Usage Examples: Legacy 
 
 ### Init an AO client
 
 ```rust
 // import the crate
-use rusty_ao::ao::Ao;
+use rusty_ao::ao::Legacy;
 // Initialize an AO client 
-let ao = Ao::new(
+let ao = Legacy::new(
   "https://mu.ao-testnet.xyz".to_string(),
   "https://cu.ao-testnet.xyz".to_string(),
   SignerTypes::Arweave("test_key.json".to_string()),
@@ -39,7 +65,7 @@ let ao = Ao::new(
 or using the `default_init` method
 
 ```rust
-let ao = Ao::default_init(SignerTypes::Arweave("test_key.json".to_string()))
+let ao = Legacy::default_init(SignerTypes::Arweave("test_key.json".to_string()))
   .unwrap();
 ```
 ### Dry run an AO process message call
