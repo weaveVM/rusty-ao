@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-// Constants
+// Constants Legacy
 pub const DATA_PROTOCOL: &str = "ao";
 pub const VARIANT: &str = "ao.TN.1";
 pub const TYPE_MESSAGE: &str = "Message";
@@ -12,6 +12,9 @@ pub const DEFAULT_CU: &str = "https://cu.ao-testnet.xyz";
 pub const DEFAULT_MODULE: &str = "xT0ogTeagEGuySbKuUoo_NaWeeBv1fZ4MqgDdKVKY0U";
 pub const DEFAULT_SQLITE_MODULE: &str = "sFNHeYzhHfP9vV9CPpqZMU-4Zzq_qKGKwlwMZozWi2Y";
 pub const DEFAULT_SCHEDULER: &str = "_GQ33BkPtZrqxA84vM8Zk-N2aO0toNNu_C-l-rawrBA";
+
+// Constants HyperBEAM
+pub const HB_NODE_ENDPOINT: &str = "https://tee-1.forward.computer";
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ResponseMu {
