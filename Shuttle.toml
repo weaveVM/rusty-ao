@@ -1,5 +1,5 @@
-[shuttle]
-name = "rusty-ao"
+[deploy]
+include = ["compiled_node_list.json", "test_key.json"]
 
-[shuttle.static]
-files = ["compiled_node_list.json", "test_key.json"]
+[build]
+assets = ["compiled_node_list.json", "test_key.json"]
