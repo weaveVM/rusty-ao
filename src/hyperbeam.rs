@@ -6,6 +6,7 @@ use crate::{
 use bundlr_sdk::currency::arweave::ArweaveBuilder;
 use bundlr_sdk::currency::solana::{Solana, SolanaBuilder};
 use std::path::PathBuf;
+use serde_json::Value;
 
 pub struct Hyperbeam {
     pub node_endpoint: String,
@@ -47,7 +48,7 @@ impl Hyperbeam {
         }
     }
 
-    pub async fn process_now(self, process_id: String) -> Result<serde_json::Value, HbErrors> {
+    pub async fn process_now(self, process_id: String) -> Result<Value, HbErrors> {
         let dev_process_url = format!("{}/{}~process@1.0/now", self.node_endpoint, process_id);
         let state = reqwest::Client::new()
             .get(dev_process_url)
@@ -80,10 +81,10 @@ impl Hyperbeam {
         Err(HbErrors::ErrorProcessNow)
     }
 
-    pub async fn meta_info(self) -> Result<String, HbErrors> {
+    pub async fn meta_info(self) -> Result<Value, HbErrors> {
         let client = reqwest::Client::new();
         
-        let req_url = format!("{}/~meta@1.0/info/", self.node_endpoint);
+        let req_url = format!("{}/~meta@1.0/info/serialize~json@1.0", self.node_endpoint);
         let response = client.get(req_url)
             .send()
             .await.map_err(|_| HbErrors::InvalidServerResponse)?;
@@ -92,7 +93,7 @@ impl Hyperbeam {
             return Err(HbErrors::InvalidServerResponse);
         }
         
-        let body = response.text().await.map_err(|_| HbErrors::InvalidServerResponse)?;
+        let body = response.json().await.map_err(|_| HbErrors::InvalidServerResponse)?;
         
         Ok(body)
     }
@@ -114,10 +115,10 @@ impl Hyperbeam {
         Ok(body)
     }
 
-    pub async fn router_routes(self) -> Result<String, HbErrors> {
+    pub async fn router_routes(self) -> Result<Value, HbErrors> {
         let client = reqwest::Client::new();
         
-        let req_url = format!("{}/~router@1.0/routes/", self.node_endpoint);
+        let req_url = format!("{}/~router@1.0/routes/serialize~json@1.0", self.node_endpoint);
         let response = client.get(req_url)
             .send()
             .await.map_err(|_| HbErrors::InvalidServerResponse)?;
@@ -126,7 +127,7 @@ impl Hyperbeam {
             return Err(HbErrors::InvalidServerResponse);
         }
         
-        let body = response.text().await.map_err(|_| HbErrors::InvalidServerResponse)?;
+        let body = response.json().await.map_err(|_| HbErrors::InvalidServerResponse)?;
         
         Ok(body)
     }
@@ -168,7 +169,7 @@ mod tests {
         let hb = Hyperbeam::default_init(SignerTypes::Arweave("test_key.json".to_string())).unwrap();
         let node_info = hb.meta_info().await.unwrap();
         println!("{:?}", node_info);
-        assert!(node_info.len() > 0);
+        assert!(node_info.to_string().len() > 0);
     }
 
     #[tokio::test]
@@ -184,6 +185,6 @@ mod tests {
         let hb = Hyperbeam::default_init(SignerTypes::Arweave("test_key.json".to_string())).unwrap();
         let node_routes = hb.router_routes().await.unwrap();
         println!("{:?}", node_routes);
-        assert!(node_routes.len() > 0);
+        assert!(node_routes.to_string().len() > 0);
     }
 }
