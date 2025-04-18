@@ -45,6 +45,29 @@ let process_id = "oQZQd1-MztVOxODecwrxFR9UGUnsrX5wGseMJ9iSH38";
 let state = hb.process_now(process_id.to_string()).await.unwrap();
 ```
 
+### Get a HyperBEAM node info
+
+Returns the JSON serialized node info -- `~meta@1.0/info/serialize~json@1.0`
+
+```rust
+let info = hb.meta_info().await.unwrap()
+```
+
+### Get a HyperBEAM node routing config
+
+Returns the JSON serialized node routing configuration -- `/~router@1.0/routes/serialize~json@1.0`
+
+```rust
+let routes = hb.router_routes().await.unwrap()
+```
+
+### Get a HyperBEAM hyperbuddy metrics
+
+Returns the hyperbuddy node metrics data -- `/~hyperbuddy@1.0/index/~hyperbuddy@1.0/metrics`
+
+```rust
+let hyperbuddy = hb.hyperbuddy_metrics().await.unwrap()
+```
 
 ## Usage Examples: Legacy 
 
@@ -124,8 +147,40 @@ assert!(res.is_ok());
 println!("{}", serde_json::to_string(&res.unwrap()).unwrap());
 ```
 
+## HyperBEAM REST API
+
+The HyperBEAM REST API server provides access to HyperBEAM functionality built on top of the `hyperbeam.rs`. The following endpoints are available under [hb.load.rs](https://hb.load.rs).
+
+To add your HyperBEAM node metadata to the server's compiled list, open a PR adding it to [compiled_node_list.json](./compiled_node_list.json)
+
+
+### Node Info
+
+Retrieves a hb node information --  `~meta@1.0/info/serialize~json@1.0`
+
+```bash
+GET /node/{address}/info
+```
+
+### Node Routes
+
+Retrieves the routing configuration for a hb node using its address -- `~router@1.0/routes/serialize~json@1.0`
+
+```bash
+GET /node/{address}/routes
+```
+
+### Node Metrics Overview
+
+An endpoint to render a node's metrics -- `~hyperbuddy@1.0/index/~hyperbuddy@1.0/metrics`
+
+```bash
+GET /node/{address}
+```
+
 ## Credits
 - goao: Golang SDK for interacting with ao processes. [link](https://github.com/permadao/goao)
+- aoconnect: The `aoconnect` library provides an abstraction for spawning, evaluating, and interacting with ao Processes. [link](https://github.com/permaweb/ao)
 
 ## License
 This project is licensed under the [MIT License](./LICENSE)
