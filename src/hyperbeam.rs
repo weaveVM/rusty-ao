@@ -79,6 +79,40 @@ impl Hyperbeam {
 
         Err(HbErrors::ErrorProcessNow)
     }
+
+    pub async fn meta_info(self) -> Result<String, HbErrors> {
+        let client = reqwest::Client::new();
+        
+        let req_url = format!("{}/~meta@1.0/info/", self.node_endpoint);
+        let response = client.get(req_url)
+            .send()
+            .await.map_err(|_| HbErrors::InvalidServerResponse)?;
+        
+        if !response.status().is_success() {
+            return Err(HbErrors::InvalidServerResponse);
+        }
+        
+        let body = response.text().await.map_err(|_| HbErrors::InvalidServerResponse)?;
+        
+        Ok(body)
+    }
+
+    pub async fn meta_info_address(self) -> Result<String, HbErrors> {
+        let client = reqwest::Client::new();
+        
+        let req_url = format!("{}/~meta@1.0/info/address", self.node_endpoint);
+        let response = client.get(req_url)
+            .send()
+            .await.map_err(|_| HbErrors::InvalidServerResponse)?;
+        
+        if !response.status().is_success() {
+            return Err(HbErrors::InvalidServerResponse);
+        }
+        
+        let body = response.text().await.map_err(|_| HbErrors::InvalidServerResponse)?;
+        
+        Ok(body)
+    }
 }
 
 #[cfg(test)]
@@ -110,5 +144,21 @@ mod tests {
             .await
             .unwrap();
         println!("{:?}", state);
+    }
+
+    #[tokio::test]
+    pub async fn test_meta_info() {
+        let hb = Hyperbeam::default_init(SignerTypes::Arweave("test_key.json".to_string())).unwrap();
+        let node_info = hb.meta_info().await.unwrap();
+        println!("{:?}", node_info);
+        assert!(node_info.len() > 0);
+    }
+
+    #[tokio::test]
+    pub async fn test_meta_info_address() {
+        let hb = Hyperbeam::default_init(SignerTypes::Arweave("test_key.json".to_string())).unwrap();
+        let node_address = hb.meta_info_address().await.unwrap();
+        println!("{:?}", node_address);
+        assert!(node_address.len() == 43);
     }
 }
