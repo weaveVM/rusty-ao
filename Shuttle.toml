@@ -1,0 +1,5 @@
+[shuttle]
+name = "rusty-ao"
+
+[shuttle.static]
+files = ["compiled_node_list.json", "test_key.json"]
