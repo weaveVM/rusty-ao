@@ -130,7 +130,24 @@ impl Hyperbeam {
         let body = response.json().await.map_err(|_| HbErrors::InvalidServerResponse)?;
         
         Ok(body)
-    }
+    } 
+
+    pub async fn hyperbuddy_metrics(self) -> Result<String, HbErrors> {
+        let client = reqwest::Client::new();
+        
+        let req_url = format!("{}/~hyperbuddy@1.0/index/~hyperbuddy@1.0/metrics", self.node_endpoint);
+        let response = client.get(req_url)
+            .send()
+            .await.map_err(|_| HbErrors::InvalidServerResponse)?;
+        
+        if !response.status().is_success() {
+            return Err(HbErrors::InvalidServerResponse);
+        }
+        
+        let body = response.text().await.map_err(|_| HbErrors::InvalidServerResponse)?;
+        
+        Ok(body)
+    }  
 }
 
 #[cfg(test)]
@@ -186,5 +203,13 @@ mod tests {
         let node_routes = hb.router_routes().await.unwrap();
         println!("{:?}", node_routes);
         assert!(node_routes.to_string().len() > 0);
+    }
+
+    #[tokio::test]
+    pub async fn test_hyperbuddy_metrics() {
+        let hb = Hyperbeam::default_init(SignerTypes::Arweave("test_key.json".to_string())).unwrap();
+        let node_metrics = hb.hyperbuddy_metrics().await.unwrap();
+        println!("{:?}", node_metrics);
+        assert!(node_metrics.to_string().len() > 0);
     }
 }
