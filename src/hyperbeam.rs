@@ -113,6 +113,23 @@ impl Hyperbeam {
         
         Ok(body)
     }
+
+    pub async fn router_routes(self) -> Result<String, HbErrors> {
+        let client = reqwest::Client::new();
+        
+        let req_url = format!("{}/~router@1.0/routes/", self.node_endpoint);
+        let response = client.get(req_url)
+            .send()
+            .await.map_err(|_| HbErrors::InvalidServerResponse)?;
+        
+        if !response.status().is_success() {
+            return Err(HbErrors::InvalidServerResponse);
+        }
+        
+        let body = response.text().await.map_err(|_| HbErrors::InvalidServerResponse)?;
+        
+        Ok(body)
+    }
 }
 
 #[cfg(test)]
@@ -160,5 +177,13 @@ mod tests {
         let node_address = hb.meta_info_address().await.unwrap();
         println!("{:?}", node_address);
         assert!(node_address.len() == 43);
+    }
+
+    #[tokio::test]
+    pub async fn test_router_routes() {
+        let hb = Hyperbeam::default_init(SignerTypes::Arweave("test_key.json".to_string())).unwrap();
+        let node_routes = hb.router_routes().await.unwrap();
+        println!("{:?}", node_routes);
+        assert!(node_routes.len() > 0);
     }
 }
